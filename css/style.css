@@ -54,6 +54,27 @@ body{
 }
 .nav-links a:hover{color:var(--primary);}
 
+.nav-auth{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.user-pill{
+  background:#eef2ff;
+  color:var(--primary);
+  padding:8px 16px;
+  border-radius:20px;
+  font-weight:600;
+  font-size:.9rem;
+}
+.error-msg{
+  color:#dc2626;
+  font-size:.85rem;
+  margin:-4px 0 4px;
+  min-height:1em;
+}
+.modal-note a{color:var(--primary);text-decoration:none;font-weight:600;}
+
 .btn{
   padding:10px 22px;
   border-radius:8px;

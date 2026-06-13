@@ -1,0 +1,14 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "swathi",
+      "email": "swathi@gmail.com",
+      "password": "$2a$10$mfGcOXRc.f4CWt5UQQb2zOakvqEu04sRMReKDr7TkG/S3ZyIBbkae",
+      "created_at": "2026-06-13T06:22:35.571Z"
+    }
+  ],
+  "bookings": [],
+  "nextUserId": 2,
+  "nextBookingId": 2
+}

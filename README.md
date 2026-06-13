@@ -1,89 +1,143 @@
-# TravelEase – Travel Booking Platform (Demo)
+# TravelEase – Travel Booking Platform (Full Stack)
 
-A front-end demo of a travel booking platform with **Flights, Hotels & Cabs** search,
-fare comparison, itinerary management, booking confirmations, travel alerts and
-payment option UI. Built with plain **HTML, CSS & JavaScript** – no build step, no
-backend required – so it deploys instantly to GitHub Pages, Vercel, Netlify, etc.
-
-## 🌟 Features
-- Tabbed search UI for Flights / Hotels / Cabs
-- Mock search results with "Book Now" buttons
-- Fare comparison table across providers
-- Itinerary manager (saved in browser `localStorage`)
-- Booking confirmation screen with a generated confirmation ID
-- Travel alerts section
-- Payment options UI (Card / UPI / Net Banking / Wallets)
-- Login modal (demo only – plug in real auth later)
-- Fully responsive layout
+A full-stack travel booking demo:
+- **Frontend**: HTML/CSS/JS (static, deploy to GitHub Pages / Vercel / Netlify)
+- **Backend**: Node.js + Express REST API with **real authentication** (JWT + bcrypt),
+  itinerary storage, and search endpoints for flights/hotels/cabs (deploy to Render / Railway / Fly.io)
 
 ## 📁 Project Structure
 ```
 travel-platform/
 ├── index.html
-├── css/
-│   └── style.css
+├── css/style.css
 ├── js/
-│   ├── data.js      # mock data – replace with real API calls
-│   └── app.js        # UI logic
-└── README.md
+│   ├── config.js     # <-- set your backend URL here
+│   ├── data.js        # fallback mock data
+│   └── app.js
+└── backend/
+    ├── server.js
+    ├── package.json
+    ├── config/db.js          # lowdb (JSON file) database
+    ├── middleware/auth.js     # JWT verification
+    └── routes/
+        ├── auth.js            # /api/auth/signup, /login, /me
+        ├── bookings.js        # /api/bookings (itinerary CRUD)
+        └── search.js          # /api/search/flights|hotels|cabs
 ```
 
-## 🔌 Connecting Real APIs (next steps)
-This is a front-end shell. To make it a real booking platform, hook these up:
-- **Flights**: Amadeus Self-Service API, Skyscanner Rapid API, Travelport
-- **Hotels**: Booking.com Affiliate API, Amadeus Hotel Search, RateHawk
-- **Cabs**: Uber API, Ola API, local cab aggregator APIs
-- **Payments**: Razorpay, Stripe, PayU
-- **Backend**: Node/Express, Firebase, or Supabase for real bookings, user auth, and storing itineraries instead of localStorage
+## 🔑 Authentication
+Real signup/login backed by:
+- **bcryptjs** – password hashing
+- **jsonwebtoken** – issues a JWT on login/signup (7 day expiry)
+- **lowdb** – stores users & bookings in a local `db.json` file (no external DB needed; swap for Postgres/Mongo later if you scale)
 
-Replace the contents of `js/data.js` with `fetch()` calls to these APIs, and update
-`js/app.js`'s `renderResults()` to map the real response fields.
+### Endpoints
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/signup` | – | `{name, email, password}` → `{token, user}` |
+| POST | `/api/auth/login` | – | `{email, password}` → `{token, user}` |
+| GET | `/api/auth/me` | ✅ | Returns current user |
+| GET | `/api/bookings` | ✅ | List logged-in user's itinerary |
+| POST | `/api/bookings` | ✅ | `{type, title, detail, price}` → adds booking |
+| DELETE | `/api/bookings/:id` | ✅ | Remove a booking |
+| GET | `/api/search/flights` | – | Mock flight results |
+| GET | `/api/search/hotels` | – | Mock hotel results |
+| GET | `/api/search/cabs` | – | Mock cab results |
+
+Send the JWT as `Authorization: Bearer <token>` for protected routes.
 
 ---
 
-## 🚀 Deployment Steps
+## 🖥️ Run Locally
 
-### Option 1: GitHub Pages (Free)
-1. Create a new repository on GitHub (e.g. `travel-booking-platform`) under
-   https://github.com/sriteja2006
-2. Upload all files from this folder (`index.html`, `css/`, `js/`, `README.md`)
-   to the repo — either via the GitHub web UI ("Add file → Upload files")
-   or via git:
+### 1. Backend
+```bash
+cd backend
+npm install
+cp .env.example .env     # edit JWT_SECRET to something random
+npm start                  # runs on http://localhost:5000
+```
+
+### 2. Frontend
+`js/config.js` already points to `http://localhost:5000/api` when running on `localhost`.
+Just open `index.html` in your browser (or use a simple static server like `npx serve .`).
+
+Try: Sign Up → Login → search flights → "Book Now" → see it appear in **My Itinerary**.
+
+---
+
+## 🚀 Deployment
+
+### Step 1 — Deploy the Backend (Render.com — free tier)
+1. Push the whole project (including `backend/`) to a GitHub repo:
    ```bash
    git init
    git add .
-   git commit -m "Initial commit - TravelEase platform"
+   git commit -m "Initial commit - TravelEase full stack"
    git branch -M main
    git remote add origin https://github.com/sriteja2006/travel-booking-platform.git
    git push -u origin main
    ```
-3. In the repo, go to **Settings → Pages**.
-4. Under **Build and deployment → Source**, select **Deploy from a branch**.
-5. Choose branch `main` and folder `/ (root)`, then click **Save**.
-6. Wait 1–2 minutes. Your site will be live at:
-   `https://sriteja2006.github.io/travel-booking-platform/`
+2. Go to https://render.com → sign in with GitHub.
+3. Click **New → Web Service**, select your repo.
+4. Settings:
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node server.js`
+   - **Instance type**: Free
+5. Add environment variable: `JWT_SECRET` = (any long random string)
+6. Click **Create Web Service**. You'll get a URL like:
+   `https://travel-booking-api.onrender.com`
 
-### Option 2: Vercel (Free)
-1. Push the project to a GitHub repo (same as steps 1–2 above).
-2. Go to https://vercel.com and sign in with your GitHub account.
-3. Click **Add New → Project**, select your `travel-booking-platform` repo.
-4. Framework Preset: choose **Other** (it's static HTML — no build command needed).
-5. Click **Deploy**. Vercel will give you a live URL like
-   `https://travel-booking-platform.vercel.app`.
-6. (Optional) Add a custom domain in Vercel's **Settings → Domains**.
+> Alternative backend hosts: **Railway.app**, **Fly.io**, **Cyclic.sh** — all support Node + Express free tiers similarly.
 
-### Option 3: Netlify (Free)
-1. Push the project to GitHub (as above).
-2. Go to https://app.netlify.com → **Add new site → Import an existing project**.
-3. Connect GitHub, select the repo.
-4. Build command: leave empty. Publish directory: `/` (root).
-5. Click **Deploy site**.
+### Step 2 — Update Frontend Config
+Edit `js/config.js` and replace the placeholder with your real backend URL:
+```js
+const API_BASE_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:5000/api"
+  : "https://travel-booking-api.onrender.com/api";
+```
 
-### Option 4: Quick Local Preview
-Just open `index.html` directly in your browser — everything works without a server
-since it's pure static HTML/CSS/JS.
+### Step 3 — Deploy the Frontend
+
+#### Option A: GitHub Pages
+1. In your repo, go to **Settings → Pages**.
+2. **Source**: Deploy from a branch → branch `main`, folder `/ (root)` → Save.
+3. Live at: `https://sriteja2006.github.io/travel-booking-platform/`
+
+> Note: GitHub Pages will also try to serve the `backend/` folder — that's fine, it's just static files sitting there unused on Pages.
+
+#### Option B: Vercel
+1. https://vercel.com → **Add New → Project** → import your repo.
+2. Framework Preset: **Other**.
+3. **Root Directory**: leave as `/` (the repo root, since `index.html` is at root).
+4. Deploy → get a URL like `https://travel-booking-platform.vercel.app`
+
+#### Option C: Netlify
+1. https://app.netlify.com → **Add new site → Import existing project**.
+2. Build command: empty. Publish directory: `/`.
+3. Deploy.
 
 ---
 
-Made as a starter template — extend the mock data and forms to fit your real
-business logic and API integrations.
+## ⚠️ CORS Note
+The backend already has `cors()` enabled for all origins, so your deployed frontend
+(GitHub Pages/Vercel/Netlify) can call your deployed backend (Render) without issues.
+
+## 🔌 Going Further / Real APIs
+Replace mock data in `backend/routes/search.js` with real provider calls:
+- **Flights**: Amadeus Self-Service API, Skyscanner Rapid API
+- **Hotels**: Booking.com Affiliate API, Amadeus Hotel Search
+- **Cabs**: Uber API, Ola API
+- **Payments**: Razorpay / Stripe / PayU (add a `/api/payments` route)
+- **Database**: swap `lowdb` (`config/db.js`) for PostgreSQL/MongoDB when you need to scale beyond a single-file JSON DB.
+
+---
+
+## 🔒 Security Checklist Before Going Live
+- [ ] Set a strong, random `JWT_SECRET` in production (never commit `.env`)
+- [ ] Use HTTPS (Render/Vercel/Netlify give this by default)
+- [ ] Add rate limiting (e.g. `express-rate-limit`) on auth routes
+- [ ] Add input validation/sanitization (e.g. `express-validator`)
+- [ ] Move from `db.json` to a real database for production scale
